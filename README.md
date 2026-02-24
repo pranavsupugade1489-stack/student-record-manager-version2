@@ -9,15 +9,7 @@ Key Objectives
 	Audit Safety: History is the only authoritative layer for corrections.
 	Accessibility: Mobile-first, offline-friendly, and optimized for low-end devices.
 
-	🎨 Design & Aesthetic
-The UI is designed to be warm, calm, and distraction-free, ensuring high readability in bright classroom environments.
-Element               Specification 						 Hex Code
-BackgroundSoft			  warm beige / cream 			  #F6E3CD
-Primary Action 			  Muted tan / light brown   #C9A172
-Secondary Accent		 	Soft terracotta           #C26A4A
-Primary Text          Dark brown / charcoal     #3B2F2A
-Success State         Muted sage green          #7FA88
-EError State          Muted red                 #C96A5B
+🎨 Design & AestheticThe UI is designed to be warm, calm, and distraction-free, ensuring high readability in bright classroom environments.ElementSpecificationHex CodeBackgroundSoft warm beige / cream#F6E3CDPrimary ActionMuted tan / light brown#C9A172Secondary AccentSoft terracotta#C26A4APrimary TextDark brown / charcoal#3B2F2ASuccess StateMuted sage green#7FA88EError StateMuted red#C96A5B
 
 UI Guidelines:
 No Pure Black/White: Soft contrast for reduced eye strain.
