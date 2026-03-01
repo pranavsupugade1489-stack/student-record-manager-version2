@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#C9A172" />
+  <meta name="description" content="Student Attendance and Academic Management System" />
+  <title>Attendance & Academic Records Management System</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/app-icon.jpg" type="image/jpeg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-nav" aria-label="Primary">
+      <h1 class="brand"><img src="assets/icons/app-icon.jpg" alt="TAAMS logo" class="brand-logo" /><span>TAAMS</span></h1>
+      <button class="nav-item active" data-target="dashboard" aria-current="page"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Dashboard</span></button>
+      <button class="nav-item" data-target="timetable">Timetable</button>
+      <button class="nav-item" data-target="class-management">Class Mgmt</button>
+      <button class="nav-item" data-target="attendance">Attendance</button>
+      <button class="nav-item" data-target="history">History</button>
+      <button class="nav-item" data-target="statistics">Statistics</button>
+      <button id="installBtn" class="install-btn" hidden>Install App</button>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div class="title-wrap">
+          <img src="assets/icons/app-icon.jpg" alt="TAAMS logo" class="title-logo" />
+          <div>
+            <h2 id="viewTitle">Dashboard</h2>
+          </div>
+        </div>
+        <p class="date-pill" id="todayLabel"></p>
+      </header>
+
+      <section id="dashboard" class="view active" aria-labelledby="viewTitle">
+        <article class="card overview-card">
+          <p id="greetingText" class="eyebrow"></p>
+          <h3 id="overviewDateText"></h3>
+          <p id="overviewDayText" class="muted"></p>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h3>Today's Schedule</h3>
+            <span class="muted">Planned + Extra Lectures</span>
+          </div>
+          <div id="lectureList" class="lecture-list"></div>
+        </article>
+
+        <button id="addLectureFab" class="fab" aria-label="Add extra lecture">+</button>
+      </section>
+
+      <section id="timetable" class="view" aria-labelledby="viewTitle">
+        <article class="card">
+          <div class="timetable-header-row">
+            <div>
+              <h3>Timetable Management</h3>
+              <p class="muted">Scheduled timetable shown by default. Use + on each day to add slots.</p>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card-head">
+            <h3>Weekly Timetable</h3>
+            <span class="muted">Tap a row to start attendance</span>
+          </div>
+          <div id="timetableWeekGrid" class="timetable-week-grid"></div>
+        </article>
+      </section>
+
+      <section id="class-management" class="view" aria-labelledby="viewTitle">
+        <article class="card">
+          <div class="card-head">
+            <h3>Class and Student Management</h3>
+            <span class="muted">Read-Only Summaries</span>
+          </div>
+          <div class="actions">
+            <button id="createClassBtn" class="btn primary">Create a New Class</button>
+          </div>
+          <div id="savedClassList" class="saved-class-list"></div>
+          <div id="classSummaryView" class="class-summary-view muted">Select a saved class to view attendance summaries.</div>
+        </article>
+      </section>
+
+      <section id="attendance" class="view" aria-labelledby="viewTitle">
+        <article class="card">
+          <div class="card-head">
+            <h3>Pre-Attendance Preview</h3>
+            <span class="muted">No auto-start</span>
+          </div>
+          <p id="attendanceContext" class="muted">Select a lecture from dashboard or fill details manually.</p>
+          <form id="attendanceSetupForm" class="attendance-setup" novalidate>
+            <label class="input-group">
+              <span>Lecture Type</span>
+              <select id="attendanceLectureType" required>
+                <option value="Theory">Theory</option>
+                <option value="Practical">Practical</option>
+              </select>
+            </label>
+            <label class="input-group">
+              <span>Class + Subject</span>
+              <select id="attendanceClassSubject" required></select>
+            </label>
+            <label class="input-group">
+              <span>Subject</span>
+              <input id="attendanceSubject" readonly />
+            </label>
+            <label class="input-group" id="attendanceBatchGroup">
+              <span>Batch (mandatory for practical)</span>
+              <select id="attendanceBatch"></select>
+            </label>
+            <label class="input-group">
+              <span>Date</span>
+              <input id="attendanceDate" type="date" required />
+            </label>
+            <label class="input-group">
+              <span>Start Time</span>
+              <input id="attendanceStartTime" type="time" required />
+            </label>
+            <label class="input-group">
+              <span>End Time</span>
+              <input id="attendanceEndTime" type="time" required />
+            </label>
+            <label class="check-row">
+              <input id="attendanceVoiceToggle" type="checkbox" />
+              <span>Voice automated attendance (manual by default)</span>
+            </label>
+            <div id="practicalConfigPanel" class="practical-config hidden">
+              <label class="check-row">
+                <input id="practicalGradedToggle" type="checkbox" />
+                <span>Is this practical graded?</span>
+              </label>
+              <label class="input-group hidden" id="practicalMaxMarksGroup">
+                <span>Maximum Marks</span>
+                <input id="practicalMaxMarksInput" type="number" min="1" />
+              </label>
+              <label class="check-row hidden" id="practicalMarkDuringGroup">
+                <input id="practicalMarkDuringToggle" type="checkbox" />
+                <span>Add marks during attendance?</span>
+              </label>
+            </div>
+            <p id="attendanceSetupHint" class="muted"></p>
+            <div class="actions">
+              <button id="attendanceStartBtn" type="button" class="btn primary" disabled>Start Attendance</button>
+            </div>
+          </form>
+        </article>
+
+        <article class="card">
+          <div class="card-head">
+            <h3>Live Preview & Manual Override</h3>
+            <span id="attendanceRunState" class="muted">Not started</span>
+          </div>
+          <div id="voiceStatusPanel" class="voice-panel hidden">
+            <p><strong>Current Roll:</strong> <span id="voiceCurrentRoll">-</span></p>
+            <p><strong>Call:</strong> <span id="voiceCallType">-</span></p>
+            <p><strong>Timer:</strong> <span id="voiceCountdown">-</span></p>
+            <p><strong>Status:</strong> <span id="voiceListeningState">Idle</span></p>
+          </div>
+          <div id="currentStudentCard" class="student-live-card muted">
+            Start attendance to show student roll card.
+          </div>
+          <div class="actions">
+            <button id="pauseVoiceBtn" type="button" class="btn hidden">Pause Voice</button>
+            <button id="resumeVoiceBtn" type="button" class="btn hidden">Resume Voice</button>
+            <button id="switchToManualBtn" type="button" class="btn hidden">Switch To Manual</button>
+          </div>
+          <h4>Manual Override & Student List</h4>
+          <div id="overrideList" class="override-list muted">No active session.</div>
+          <div id="attendanceSummaryBox" class="attendance-summary hidden"></div>
+          <div class="actions">
+            <button id="saveAttendanceBtn" type="button" class="btn primary hidden">Save Attendance</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="history" class="view" aria-labelledby="viewTitle">
+        <article class="card">
+          <div class="history-header-row">
+            <div>
+              <h3>Attendance History (Only Edit Layer)</h3>
+              <p id="historyActiveFilterText" class="muted">Showing today's attendance history.</p>
+            </div>
+            <button id="openHistoryFiltersBtn" type="button" class="btn">Filter View</button>
+          </div>
+          <div id="historySessionList" class="history-session-list muted">No saved attendance session found.</div>
+        </article>
+      </section>
+
+      <section id="statistics" class="view" aria-labelledby="viewTitle">
+        <article class="card">
+          <div class="stats-header-row">
+            <div>
+              <h3>Statistics (Read-Only)</h3>
+              <p class="muted">Computed dynamically till current date. Any correction must be done in History.</p>
+            </div>
+            <button id="statsTheorySettingsBtn" type="button" class="btn hidden" title="Theory marks settings">&#9881;</button>
+          </div>
+
+          <div class="stats-filters">
+            <label class="input-group">
+              <span>Class Type</span>
+              <select id="statsClassTypeSelect">
+                <option value="Theory">Theory</option>
+                <option value="Practical">Practical</option>
+              </select>
+            </label>
+            <label class="input-group">
+              <span>Class Name</span>
+              <select id="statsClassSelect"></select>
+            </label>
+            <label class="input-group hidden" id="statsBatchGroup">
+              <span>Batch (Practical)</span>
+              <select id="statsBatchSelect"></select>
+            </label>
+          </div>
+
+          <p id="statsClassContext" class="muted"></p>
+
+          <div class="grid three-up" id="statsSummaryGrid">
+            <div class="metric"><span>Total Lectures Conducted</span><strong id="statsTotalLectures">0</strong></div>
+            <div class="metric"><span>Average Class Attendance (%)</span><strong id="statsAvgAttendance">0%</strong></div>
+            <button id="statsDefaultersBtn" type="button" class="metric metric-button">
+              <span>Number of Defaulters (&lt;75%)</span>
+              <strong id="statsDefaultersCount">0</strong>
+            </button>
+          </div>
+
+          <div class="stats-table-wrap">
+            <table id="statsTable" class="stats-table">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <p id="statsHintText" class="muted"></p>
+
+          <div class="actions">
+            <button id="statsExportBtn" type="button" class="btn">Export to Excel</button>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Primary mobile">
+      <button class="nav-item active" data-target="dashboard">Dashboard</button>
+      <button class="nav-item" data-target="timetable">Timetable</button>
+      <button class="nav-item" data-target="class-management">Classes And Students</button>
+      <button class="nav-item" data-target="attendance">Attendance</button>
+      <button class="nav-item" data-target="history">History</button>
+      <button class="nav-item" data-target="statistics">Statistics</button>
+    </nav>
+  </div>
+
+  <dialog id="menuDialog" class="modal menu-modal">
+    <form method="dialog" class="modal-sheet" id="menuSheet"></form>
+  </dialog>
+
+  <dialog id="classSummaryDialog" class="modal">
+    <form method="dialog" class="modal-card" id="classSummaryContent"></form>
+  </dialog>
+
+  <dialog id="extraLectureDialog" class="modal">
+    <form method="dialog" class="modal-card" id="extraLectureForm">
+      <h3>Add Extra Lecture</h3>
+      <p class="muted">Add an unplanned lecture for today or selected date/time.</p>
+
+      <label class="input-group">
+        <span>Lecture Type</span>
+        <select name="lectureType" required>
+          <option value="Theory">Theory</option>
+          <option value="Practical">Practical</option>
+        </select>
+      </label>
+      <label class="input-group">
+        <span>Class + Subject</span>
+        <select id="extraClassSubjectSelect" name="classSubjectKey" required></select>
+      </label>
+      <p id="classSelectionHint" class="muted"></p>
+      <label class="input-group" id="batchField">
+        <span>Batch</span>
+        <select id="extraBatchSelect" name="batch" disabled>
+          <option value="">Select class first</option>
+        </select>
+      </label>
+      <p id="batchSelectionHint" class="muted"></p>
+      <label class="input-group">
+        <span>Classroom</span>
+        <input name="classroom" required placeholder="e.g. Lab 2" />
+      </label>
+      <label class="input-group">
+        <span>Date</span>
+        <input name="date" type="date" required />
+      </label>
+      <label class="input-group">
+        <span>Start Time</span>
+        <input id="extraStartTime" name="startTime" type="time" required />
+      </label>
+      <label class="input-group">
+        <span>End Time</span>
+        <input id="extraEndTime" name="endTime" type="time" required />
+      </label>
+      <div class="actions">
+        <button id="cancelExtraLectureBtn" type="button" class="btn">Cancel</button>
+        <button id="addLectureSubmitBtn" class="btn primary" value="default">Add Lecture</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="timetableDialog" class="modal">
+    <form method="dialog" class="modal-card" id="timetableForm" novalidate>
+      <h3 id="timetableDialogTitle">Add Schedule</h3>
+      <label class="input-group">
+        <span>Class + Subject</span>
+        <select id="timetableClassSubjectSelect" required></select>
+      </label>
+      <label class="input-group">
+        <span>Lecture Type</span>
+        <select id="timetableLectureType" required>
+          <option value="Theory">Theory</option>
+          <option value="Practical">Practical</option>
+        </select>
+      </label>
+      <label class="input-group">
+        <span>Batch (for practical)</span>
+        <select id="timetableBatchSelect" disabled>
+          <option value="">Select class first</option>
+        </select>
+      </label>
+      <label class="input-group">
+        <span>Classroom</span>
+        <input id="timetableClassroomInput" required placeholder="e.g. Room 204" />
+      </label>
+      <label class="input-group">
+        <span>Day</span>
+        <select id="timetableDaySelect" required>
+          <option>Monday</option>
+          <option>Tuesday</option>
+          <option>Wednesday</option>
+          <option>Thursday</option>
+          <option>Friday</option>
+          <option>Saturday</option>
+          <option>Sunday</option>
+        </select>
+      </label>
+      <label class="input-group">
+        <span>Start Time</span>
+        <input id="timetableStartTime" type="time" required />
+      </label>
+      <label class="input-group">
+        <span>End Time</span>
+        <input id="timetableEndTime" type="time" required />
+      </label>
+      <p class="muted">End time defaults to one hour after start time (editable).</p>
+      <p id="timetableFormHint" class="muted"></p>
+      <div class="actions">
+        <button type="button" id="timetableAddBtn" class="btn primary">Add</button>
+        <button type="button" id="timetableSaveBtn" class="btn primary hidden">Save</button>
+        <button type="button" id="timetableCancelEditBtn" class="btn">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="classWizardDialog" class="modal">
+    <form method="dialog" class="modal-card wizard" id="classWizardForm">
+      <h3>Create a new class with students</h3>
+      <p id="wizardHint" class="muted"></p>
+
+      <div class="wizard-step" data-step="details">
+        <label class="input-group">
+          <span>Class Name</span>
+          <input name="className" required placeholder="e.g. Class F" />
+        </label>
+        <label class="input-group">
+          <span>Subject Name</span>
+          <input name="subjectName" required placeholder="e.g. Software Engineering" />
+        </label>
+        <div class="actions">
+          <button type="button" id="nextToStudentsBtn" class="btn primary">Next</button>
+        </div>
+      </div>
+
+      <div class="wizard-step hidden" data-step="students">
+        <p class="muted">Choose one method to add students.</p>
+        <div class="segmented">
+          <button type="button" id="manualModeBtn" class="btn primary">Manual Entry</button>
+          <button type="button" id="excelModeBtn" class="btn">Excel Import</button>
+        </div>
+
+        <div id="manualEntryPane" class="pane">
+          <label class="input-group">
+            <span>Student Name</span>
+            <input name="studentName" placeholder="e.g. ADITI SHAH" />
+          </label>
+          <label class="input-group">
+            <span>Roll Number</span>
+            <input name="rollNumber" type="number" min="1" placeholder="e.g. 12" />
+          </label>
+          <div class="actions">
+            <button type="button" id="addStudentBtn" class="btn">Enter</button>
+          </div>
+        </div>
+
+        <div id="excelEntryPane" class="pane hidden">
+          <p class="muted">Download sample Excel format and upload only Excel files.</p>
+          <div class="actions">
+            <button type="button" id="downloadSampleBtn" class="btn">Download Sample Excel</button>
+            <label class="btn">
+              Import Excel
+              <input id="excelFileInput" type="file" accept=".xls,.xlsx,.xml" hidden />
+            </label>
+          </div>
+          <p id="excelImportStatus" class="muted"></p>
+        </div>
+
+        <div class="student-preview">
+          <p><strong>Students Added:</strong> <span id="studentCountLabel">0</span>/100</p>
+          <ul id="studentPreviewList" class="simple-list"></ul>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="toBatchBtn" class="btn primary">Proceed to Batch Settings</button>
+        </div>
+      </div>
+
+      <div class="wizard-step hidden" data-step="batches">
+        <label class="check-row">
+          <input id="enableBatchToggle" type="checkbox" />
+          <span>Divide class into batches</span>
+        </label>
+
+        <div id="batchPane" class="pane hidden">
+          <label class="input-group">
+            <span>Batch Name</span>
+            <input name="batchName" placeholder="e.g. F1" />
+          </label>
+          <label class="input-group">
+            <span>Starting Roll Number (inclusive)</span>
+            <input name="batchStart" type="number" min="1" />
+          </label>
+          <label class="input-group">
+            <span>Ending Roll Number (inclusive)</span>
+            <input name="batchEnd" type="number" min="1" />
+          </label>
+          <div class="actions">
+            <button type="button" id="addBatchBtn" class="btn">Add Batch</button>
+          </div>
+        </div>
+
+        <p id="batchValidationText" class="muted"></p>
+        <ul id="batchPreviewList" class="simple-list"></ul>
+
+        <div class="actions">
+          <button class="btn" value="cancel">Cancel</button>
+          <button type="button" id="saveClassBtn" class="btn primary">Save Class</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+    <dialog id="historyFilterDialog" class="modal">
+    <form method="dialog" class="modal-card" id="historyFilterForm">
+      <h3>Filter History View</h3>
+      <label class="input-group">
+        <span>Class Type</span>
+        <select id="historyTypeFilter">
+          <option value="">All Types</option>
+          <option value="Theory">Theory</option>
+          <option value="Practical">Practical</option>
+        </select>
+      </label>
+      <label class="input-group">
+        <span>Class Name Search</span>
+        <input id="historyClassSearch" list="historyClassSuggest" placeholder="Type class name" />
+        <datalist id="historyClassSuggest"></datalist>
+      </label>
+
+      <label class="check-row">
+        <input id="historyUseDateRangeToggle" type="checkbox" />
+        <span>Use date range (From-To)</span>
+      </label>
+      <label class="input-group" id="historySingleDateGroup">
+        <span>Single Date</span>
+        <input id="historySingleDateFilter" type="date" />
+      </label>
+      <div id="historyDateRangeGroup" class="history-date-range hidden">
+        <label class="input-group">
+          <span>From Date</span>
+          <input id="historyFromDateFilter" type="date" />
+        </label>
+        <label class="input-group">
+          <span>To Date</span>
+          <input id="historyToDateFilter" type="date" />
+        </label>
+      </div>
+      <div class="actions">
+        <button id="historyApplyFiltersBtn" type="button" class="btn primary">Apply Filters</button>
+        <button class="btn" value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="historyAttendanceDialog" class="modal">
+    <form method="dialog" class="modal-card" id="historyAttendanceForm">
+      <h3>Edit Attendance</h3>
+      <p id="historyAttendanceContext" class="muted"></p>
+      <div id="historyAttendanceList" class="override-list"></div>
+      <div class="actions">
+        <button id="historyAttendanceSaveBtn" type="button" class="btn primary">Save Attendance Changes</button>
+        <button class="btn" value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="historyGradeDialog" class="modal">
+    <form method="dialog" class="modal-card" id="historyGradeForm">
+      <h3>Add / Edit Grade</h3>
+      <p id="historyGradeContext" class="muted"></p>
+      <label class="input-group">
+        <span>Search (roll or name)</span>
+        <input id="historyGradeSearch" placeholder="e.g. 12 or ADITI" />
+      </label>
+      <div class="actions">
+        <button id="historyPrevStudentBtn" type="button" class="btn">&lt; Prev</button>
+        <button id="historyNextStudentBtn" type="button" class="btn">Next &gt;</button>
+      </div>
+      <div id="historyGradeStudentCard" class="student-live-card"></div>
+      <label class="check-row">
+        <input id="historyGradePresentToggle" type="checkbox" />
+        <span>Present</span>
+      </label>
+      <label class="input-group">
+        <span>Marks</span>
+        <input id="historyGradeMarksInput" type="number" min="0" />
+      </label>
+      <div class="actions">
+        <button id="historyGradeSaveBtn" type="button" class="btn primary">Save / Edit</button>
+        <button class="btn" value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="statsTheoryRulesDialog" class="modal">
+    <form method="dialog" class="modal-card" id="statsTheoryRulesForm">
+      <h3>Theory Attendance Marks Settings</h3>
+      <p class="muted">Edit attendance percentage ranges and marks (out of 5).</p>
+      <div id="statsTheoryRulesBody" class="stats-rules-grid"></div>
+      <div class="actions">
+        <button id="statsTheoryRulesApplyBtn" type="button" class="btn primary">Apply</button>
+        <button class="btn" value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <p id="toast" class="toast" aria-live="polite"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
